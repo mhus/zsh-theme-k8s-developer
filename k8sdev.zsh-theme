@@ -17,14 +17,31 @@ ZSH_THEME_GIT_PROMPT_STAGED="%{$fg_bold[green]%}●%{$reset_color%}"
 ZSH_THEME_GIT_PROMPT_UNSTAGED="%{$fg_bold[yellow]%}●%{$reset_color%}"
 ZSH_THEME_GIT_PROMPT_UNTRACKED="%{$fg_bold[red]%}●%{$reset_color%}"
 
-bureau_git_info () {
+ZSH_THEME_GIT_PROMPT_TEAM_PREFIX="%{$fg_bold[blue]%}"
+ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_PREFIX="%{$fg_bold[red]%}"
+
+function git_team_status() {
+  local team=$(git team|tr \\n \ |cut -d \  -f 2-|sed 's/<.*>//g')
+  if [[ $team == "git-team disabled" ]]; then
+    echo ""
+  else
+    echo -n %{$ZSH_THEME_GIT_PROMPT_TEAM_PREFIX}\(${team:22}\)%{$reset_color%}
+  fi
+}
+
+function k8s_context() {
+  echo -n %{$ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_PREFIX}$(kubectl config current-context)%{$reset_color%}
+}
+
+
+mhus_git_info () {
   local ref
   ref=$(command git symbolic-ref HEAD 2> /dev/null) || \
   ref=$(command git rev-parse --short HEAD 2> /dev/null) || return
   echo "${ref#refs/heads/}"
 }
 
-bureau_git_status() {
+mhus_git_status() {
   local result gitstatus
   gitstatus="$(command git status --porcelain -b 2>/dev/null)"
 
@@ -67,9 +84,9 @@ bureau_git_status() {
   echo $result
 }
 
-bureau_git_prompt() {
+mhus_git_prompt() {
   # check git information
-  local gitinfo=$(bureau_git_info)
+  local gitinfo=$(mhus_git_info)$(git_team_status)
   if [[ -z "$gitinfo" ]]; then
     return
   fi
@@ -78,7 +95,7 @@ bureau_git_prompt() {
   local output="${gitinfo:gs/%/%%}"
 
   # check git status
-  local gitstatus=$(bureau_git_status)
+  local gitstatus=$(mhus_git_status)
   if [[ -n "$gitstatus" ]]; then
     output+=" $gitstatus"
   fi
@@ -113,15 +130,21 @@ get_space () {
 _1LEFT="$_USERNAME $_PATH"
 _1RIGHT="[%*]"
 
-bureau_precmd () {
+mhus_precmd () {
   _1SPACES=`get_space $_1LEFT $_1RIGHT`
   print
   print -rP "$_1LEFT$_1SPACES$_1RIGHT"
 }
 
 setopt prompt_subst
-PROMPT='> $_LIBERTY '
-RPROMPT='$(nvm_prompt_info) $(bureau_git_prompt)'
+#PROMPT='> $_LIBERTY '
+#RPROMPT='$(nvm_prompt_info) $(mhus_git_prompt) $(k8s_context)'
+PROMPT="
+"'$(printf '─%.0s' {1..$((COLUMNS-6))})'"─┤
+$(nvm_prompt_info)
+$(mhus_git_prompt)
+$(k8s_context)
+> $_LIBERTY "
 
 autoload -U add-zsh-hook
-add-zsh-hook precmd bureau_precmd
+add-zsh-hook precmd mhus_precmd
