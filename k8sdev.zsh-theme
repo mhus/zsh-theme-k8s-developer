@@ -96,7 +96,7 @@ mhus_git_prompt() {
 }
 
 mhus_date() {
-  date +%H:%M\ %d.%m.%Y
+  date +%H:%M:%S\ %d.%m.%Y
 }
 
 if [[ $EUID -eq 0 ]]; then
