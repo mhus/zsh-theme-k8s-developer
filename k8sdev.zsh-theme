@@ -95,14 +95,18 @@ mhus_git_prompt() {
   echo "${ZSH_THEME_GIT_PROMPT_PREFIX}${output}${ZSH_THEME_GIT_PROMPT_SUFFIX}"
 }
 
+mhus_date() {
+  date +%H:%M\ %d.%m.%Y
+}
+
 if [[ $EUID -eq 0 ]]; then
   _USERNAME="%{$fg_bold[red]%}%n"
   _LIBERTY="%{$fg[red]%}#"
 else
-  _USERNAME="%{$fg_bold[white]%}%n"
+  _USERNAME="%{$fg_bold[blue]%}%n"
   _LIBERTY="%{$fg[green]%}$"
 fi
-_USERNAME="$_USERNAME%{$reset_color%}@%m"
+_USERNAME="$_USERNAME@%m%{$reset_color%}"
 _LIBERTY="$_LIBERTY%{$reset_color%}"
 
 mhus_precmd () {
@@ -111,7 +115,7 @@ if [[ "$(mhus_git_info)" ]]; then
   print -rP $fg_bold[blue]┃$reset_color GIT: $(mhus_git_prompt|cut -c-$((COLUMNS)))
 fi
 print -rP $fg_bold[blue]┃$reset_color K8S: $(k8s_context|cut -c-$((COLUMNS)))
-print -rP $fg_bold[blue]┃$reset_color $(echo $_USERNAME:$(PWD)|cut -c-$((COLUMNS+7)))
+print -rP $fg_bold[blue]┃ $(echo \[$(mhus_date)\] $_USERNAME $(PWD)|cut -c-$((COLUMNS+7)))
 }
 
 setopt prompt_subst
