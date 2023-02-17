@@ -122,7 +122,7 @@ setopt prompt_subst
 #PROMPT='> $_LIBERTY '
 #RPROMPT='$(nvm_prompt_info) $(mhus_git_prompt) $(k8s_context)'
 RPROMPT=""
-PROMPT="$fg_bold[blue]┗$reset_color $_LIBERTY "
+PROMPT="$fg_bold[blue]┗ $fg_bold[red]%(?..[%?] )$reset_color$_LIBERTY "
 
 autoload -U add-zsh-hook
 add-zsh-hook precmd mhus_precmd
