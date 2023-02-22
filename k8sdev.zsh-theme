@@ -14,6 +14,8 @@ ZSH_THEME_GIT_PROMPT_UNTRACKED="$fg_bold[red]●$reset_color"
 
 ZSH_THEME_GIT_PROMPT_TEAM_PREFIX="$fg_bold[blue]"
 ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_PREFIX="$fg_bold[red]"
+ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_PREFIX_LOW="$fg_bold[green]"
+ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_LOW_MARKER=dev
 
 function git_team_status() {
   local team=$(git team|tr \\n \ |cut -d \  -f 2-|sed 's/<.*>//g')
@@ -25,7 +27,12 @@ function git_team_status() {
 }
 
 function k8s_context() {
-  echo -n $ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_PREFIX$(kubectl config current-context)$reset_color
+  local context=$(kubectl config current-context)
+  local color=$ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_PREFIX
+  if [[ "$context" =~ $ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_LOW_MARKER ]]; then
+    color=$ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_PREFIX_LOW
+  fi
+  echo -n $color$(kubectl config current-context)$reset_color
 }
 
 
@@ -110,19 +117,26 @@ _USERNAME="$_USERNAME@%m%{$reset_color%}"
 _LIBERTY="$_LIBERTY%{$reset_color%}"
 
 mhus_precmd () {
+  local rc=$?
 print -rP $fg_bold[blue]┏$(printf '━%.0s' {1..$((COLUMNS-3))})┓$reset_color
 if [[ "$(mhus_git_info)" ]]; then
   print -rP $fg_bold[blue]┃$reset_color GIT: $(mhus_git_prompt|cut -c-$((COLUMNS)))
 fi
 print -rP $fg_bold[blue]┃$reset_color K8S: $(k8s_context|cut -c-$((COLUMNS)))
-print -rP $fg_bold[blue]┃ $(echo \[$(mhus_date)\] $_USERNAME $(PWD)|cut -c-$((COLUMNS+7)))
+print -nrP $fg_bold[blue]┃\ 
+if [ "$rc" -ne "0" ]; then
+  print -nrP $fg_bold[red]\[$rc\]$fg_bold[blue]
+fi
+print -rPD $(echo \[$(mhus_date)\] $_USERNAME $PWD|cut -c-$((COLUMNS+7)))
 }
 
 setopt prompt_subst
 #PROMPT='> $_LIBERTY '
 #RPROMPT='$(nvm_prompt_info) $(mhus_git_prompt) $(k8s_context)'
 RPROMPT=""
-PROMPT="$fg_bold[blue]┗ $fg_bold[red]%(?..[%?] )$reset_color$_LIBERTY "
+#ZSH_THEME_START="┗ "
+#PROMPT="$fg_bold[blue]$ZSH_THEME_START$_LIBERTY "
+PROMPT="$_LIBERTY "
 
 autoload -U add-zsh-hook
 add-zsh-hook precmd mhus_precmd
