@@ -19,7 +19,7 @@ ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_LOW_MARKER=dev
 
 function git_team_status() {
   local team=$(git team|tr \\n \ |cut -d \  -f 2-|sed 's/<.*>//g')
-  if [[ $team == "git-team disabled" ]]; then
+  if [[ $team == "disabled " ]]; then
     echo ""
   else
     echo -n $ZSH_THEME_GIT_PROMPT_TEAM_PREFIX\(${team:22}\)$reset_color
