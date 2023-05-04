@@ -17,8 +17,14 @@ ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_PREFIX="$fg_bold[red]"
 ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_PREFIX_LOW="$fg_bold[green]"
 ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_LOW_MARKER=dev
 
+function qmachine_status() {
+  if [ ! -x "$QAPI_ID" ]; then
+    echo -P "QM: $fg_bold[red]$QAPI_ID$reset_color"
+  fi
+}
+
 function java_version() {
-  local version=$(java -version 2>&1|grep version|tail -n 1|cut -d ' ' -f 3-)
+  local version=$(JAVA_TOOL_OPTIONS="" java -version 2>&1|grep version|tail -n 1|cut -d ' ' -f 3-)
   echo -n "$fg_bold[blue]$version$reset_color"
 }
 
@@ -128,7 +134,8 @@ mhus_precmd () {
   if [[ "$(mhus_git_info)" ]]; then
     print -nrP GIT: $(mhus_git_prompt)\ 
   fi
-  print -rP JDK: $(java_version)
+  print -nrP JDK: $(java_version)
+  print -rP \ $(qmachine_status)
   print -rP $fg_bold[blue]┃$reset_color K8S: $(k8s_context|cut -c-$((COLUMNS)))
   print -nrP $fg_bold[blue]┃\ 
   if [ "$rc" -ne "0" ]; then
