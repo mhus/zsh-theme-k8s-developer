@@ -18,7 +18,7 @@ ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_PREFIX_LOW="$fg_bold[green]"
 ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_LOW_MARKER=dev
 
 function qmachine_status() {
-  if [ ! -x "$QAPI_ID" ]; then
+  if [ ! -z "$QAPI_ID" ]; then
     echo -P "QM: $fg_bold[red]$QAPI_ID$reset_color"
   fi
 }
