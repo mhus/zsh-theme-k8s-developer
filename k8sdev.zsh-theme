@@ -12,10 +12,6 @@ ZSH_THEME_GIT_PROMPT_STAGED="$fg_bold[green]●$reset_color"
 ZSH_THEME_GIT_PROMPT_UNSTAGED="$fg_bold[yellow]●$reset_color"
 ZSH_THEME_GIT_PROMPT_UNTRACKED="$fg_bold[red]●$reset_color"
 
-ZSH_THEME_GIT_PROMPT_TEAM_PREFIX="$fg_bold[blue]"
-ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_PREFIX="$fg_bold[red]"
-ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_PREFIX_LOW="$fg_bold[green]"
-ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_LOW_MARKER=dev
 
 function qmachine_status() {
   if [ ! -z "$QAPI_ID" ]; then
@@ -26,24 +22,6 @@ function qmachine_status() {
 function java_version() {
   local version=$(JAVA_TOOL_OPTIONS="" java -version 2>&1|grep version|tail -n 1|cut -d ' ' -f 3-)
   echo -n "$fg_bold[blue]$version$reset_color"
-}
-
-function git_team_status() {
-  local team=$(git team|tr \\n \ |cut -d \  -f 2-|sed 's/<.*>//g')
-  if [[ $team == "disabled " ]]; then
-    echo -n ""
-  else
-    echo -n $ZSH_THEME_GIT_PROMPT_TEAM_PREFIX\(${team:22}\)$reset_color
-  fi
-}
-
-function k8s_context() {
-  local context=$(kubectl config current-context)
-  local color=$ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_PREFIX
-  if [[ "$context" =~ $ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_LOW_MARKER ]]; then
-    color=$ZSH_THEME_GIT_PROMPT_K8S_CONTEXT_PREFIX_LOW
-  fi
-  echo -n $color$(kubectl config current-context)$reset_color
 }
 
 
@@ -99,7 +77,7 @@ mhus_git_status() {
 
 mhus_git_prompt() {
   # check git information
-  local gitinfo=$(mhus_git_info)$(git_team_status)
+  local gitinfo=$(mhus_git_info)
 
   # quote % in git information
   local output="${gitinfo}"
@@ -136,8 +114,7 @@ mhus_precmd () {
   fi
   print -nrP JDK: $(java_version)
   print -rP \ $(qmachine_status)
-  print -rP $fg_bold[blue]┃$reset_color K8S: $(k8s_context|cut -c-$((COLUMNS)))
-  print -nrP $fg_bold[blue]┃\ 
+print -nrP $fg_bold[blue]┃\ 
   if [ "$rc" -ne "0" ]; then
     print -nrP $fg_bold[red]\[$rc\]$fg_bold[blue]
   fi
